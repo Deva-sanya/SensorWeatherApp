@@ -22,17 +22,14 @@ public class MeasurementService {
         return measurementRepository.findAll();
     }
 
-    public int findRainyDays(List<Measurement> measurements) {
-        measurements = measurementRepository.findAll();
+    public int findRainyDays() {
+        List<Measurement> measurements = measurementRepository.findAll();
         int count = 0;
         for (int i = 0; i < measurements.size(); i++) {
             if (measurements.get(i).isRaining() == true) {
                 count++;
-            } else {
-                return i;
             }
         }
-
         return count;
     }
 

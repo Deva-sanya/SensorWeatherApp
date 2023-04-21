@@ -1,12 +1,9 @@
 package com.example.SensorWeatherApp.controllers;
 
 import com.example.SensorWeatherApp.models.Measurement;
-import com.example.SensorWeatherApp.models.Sensor;
 import com.example.SensorWeatherApp.services.MeasurementService;
 import com.example.SensorWeatherApp.util.MeasurementNotAddException;
 import com.example.SensorWeatherApp.util.MeasurementResponse;
-import com.example.SensorWeatherApp.util.SensorErrorResponse;
-import com.example.SensorWeatherApp.util.SensorNotRegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +31,8 @@ public class MeasureController {
     }
 
     @GetMapping("/rainyDaysCount")
-    public String findRainyDays(@ModelAttribute("measurements") List<Measurement> measurements) {
-        measurementService.findRainyDays(measurements);
-        return "/books/addBook";
+    public int findRainyDays() {
+        return measurementService.findRainyDays();
     }
 
     @PostMapping("/add")
@@ -50,7 +46,7 @@ public class MeasureController {
                         .append(";");
             }
 
-            throw new SensorNotRegistrationException(errorMsg.toString());
+            throw new MeasurementNotAddException(errorMsg.toString());
         }
         measurementService.saveMeasurement(measurement);
         return ResponseEntity.ok(HttpStatus.OK);
