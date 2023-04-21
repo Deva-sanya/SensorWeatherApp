@@ -1,10 +1,20 @@
 package com.example.SensorWeatherApp.controllers;
 
 import com.example.SensorWeatherApp.models.Measurement;
+import com.example.SensorWeatherApp.models.Sensor;
 import com.example.SensorWeatherApp.services.MeasurementService;
+import com.example.SensorWeatherApp.util.MeasurementNotAddException;
+import com.example.SensorWeatherApp.util.MeasurementResponse;
+import com.example.SensorWeatherApp.util.SensorErrorResponse;
+import com.example.SensorWeatherApp.util.SensorNotRegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -19,9 +29,8 @@ public class MeasureController {
     }
 
     @GetMapping
-    public String allMeasurement() {
-        measurementService.findAllMeasurement();
-        return "/books/addBook";
+    public List<Measurement> allMeasurement() {
+        return measurementService.findAllMeasurement();
     }
 
     @GetMapping("/rainyDaysCount")
@@ -30,14 +39,30 @@ public class MeasureController {
         return "/books/addBook";
     }
 
-    @GetMapping("/newMeasurement")
-    public String newMeasurement(@ModelAttribute("measurement") Measurement measurement) {
-        return "/books/addBook";
+    @PostMapping("/add")
+    public ResponseEntity<HttpStatus> registrationOfMeasurement(@RequestBody @Valid Measurement measurement, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMsg = new StringBuilder();
+            List<FieldError> errors = bindingResult.getFieldErrors();
+            for (FieldError error : errors) {
+                errorMsg.append(error.getField())
+                        .append(" - ").append(error.getDefaultMessage())
+                        .append(";");
+            }
+
+            throw new SensorNotRegistrationException(errorMsg.toString());
+        }
+        measurementService.saveMeasurement(measurement);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PostMapping("/add")
-    public String registrationOfMeasurement(@ModelAttribute("measurement") Measurement measurement) {
-        measurementService.saveMeasurement(measurement);
-        return "redirect:/books";
+
+    @ExceptionHandler
+    private ResponseEntity<MeasurementResponse> handleException(MeasurementNotAddException e) {
+        MeasurementResponse response = new MeasurementResponse(
+                e.getMessage(),
+                System.currentTimeMillis()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

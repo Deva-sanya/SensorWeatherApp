@@ -23,6 +23,7 @@ public class Sensor {
     @Size(min = 3, max = 30, message = "The name of the sensor should be between 3 and 30 characters long.")
     private String name;
 
-    @OneToMany
-    private List<Sensor> sensors;
+    @OneToMany(mappedBy = "sensor")
+    private List<Measurement> measurements;
+
 }

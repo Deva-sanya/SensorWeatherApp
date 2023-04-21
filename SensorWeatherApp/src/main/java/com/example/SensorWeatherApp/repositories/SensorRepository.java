@@ -3,8 +3,8 @@ package com.example.SensorWeatherApp.repositories;
 import com.example.SensorWeatherApp.models.Sensor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface SensorRepository extends JpaRepository<Sensor, Integer> {
-    List<Sensor> findSensorByNameStartsWith(String name);
+    Optional<Sensor> findSensorByName(String name);
 }

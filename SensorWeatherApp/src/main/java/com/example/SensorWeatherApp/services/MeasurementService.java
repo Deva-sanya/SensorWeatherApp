@@ -1,12 +1,10 @@
 package com.example.SensorWeatherApp.services;
 
 import com.example.SensorWeatherApp.models.Measurement;
-import com.example.SensorWeatherApp.models.Sensor;
 import com.example.SensorWeatherApp.repositories.MeasurementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -21,7 +19,6 @@ public class MeasurementService {
     }
 
     public List<Measurement> findAllMeasurement() {
-
         return measurementRepository.findAll();
     }
 
