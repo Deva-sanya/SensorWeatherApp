@@ -30,6 +30,6 @@ public class MeasurementValidator implements Validator {
         }
 
         if (sensorService.findByName(measurement.getSensor().getName()).isEmpty())
-            errors.rejectValue("sensor", "Нет зарегистрированного сенсора с таким именем!");
+            errors.rejectValue("sensor", "There is no registered sensor with this name!");
     }
 }
