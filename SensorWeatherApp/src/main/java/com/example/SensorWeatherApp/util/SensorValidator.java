@@ -1,7 +1,6 @@
 package com.example.SensorWeatherApp.util;
 
 import com.example.SensorWeatherApp.models.Sensor;
-import com.example.SensorWeatherApp.repositories.SensorRepository;
 import com.example.SensorWeatherApp.services.SensorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
