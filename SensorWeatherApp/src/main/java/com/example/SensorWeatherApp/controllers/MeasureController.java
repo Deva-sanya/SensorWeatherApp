@@ -1,64 +1,79 @@
 package com.example.SensorWeatherApp.controllers;
 
+import com.example.SensorWeatherApp.dto.MeasurementDTO;
+import com.example.SensorWeatherApp.dto.MeasurementsResponse;
 import com.example.SensorWeatherApp.models.Measurement;
 import com.example.SensorWeatherApp.services.MeasurementService;
-import com.example.SensorWeatherApp.util.MeasurementNotAddException;
-import com.example.SensorWeatherApp.util.MeasurementResponse;
+import com.example.SensorWeatherApp.util.MeasurementErrorResponse;
+import com.example.SensorWeatherApp.util.MeasurementException;
+import com.example.SensorWeatherApp.util.MeasurementValidator;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.example.SensorWeatherApp.util.ErrorsUtil.returnErrorsToClient;
 
 
 @RestController
 @RequestMapping("/measurements")
 public class MeasureController {
+
     private final MeasurementService measurementService;
+    private final MeasurementValidator measurementValidator;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public MeasureController(MeasurementService measurementService) {
+    public MeasureController(MeasurementService measurementService,
+                                  MeasurementValidator measurementValidator,
+                                  ModelMapper modelMapper) {
         this.measurementService = measurementService;
-    }
-
-    @GetMapping
-    public List<Measurement> allMeasurement() {
-        return measurementService.findAllMeasurement();
+        this.measurementValidator = measurementValidator;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/rainyDaysCount")
-    public int findRainyDays() {
-        return measurementService.findRainyDays();
+    public Long getRainyDaysCount() {
+        return measurementService.findAllMeasurement().stream().filter(Measurement::isRaining).count();
     }
 
-    @PostMapping(value = "/add", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<HttpStatus> registrationOfMeasurement(@RequestBody @Valid Measurement measurement, BindingResult bindingResult){
+    @GetMapping()
+    public MeasurementsResponse getMeasurements() {
+        return new MeasurementsResponse(measurementService.findAllMeasurement().stream().map(this::convertToMeasurementDTO)
+                .collect(Collectors.toList()));
+    }
 
-        if (bindingResult.hasErrors()) {
-            StringBuilder errorMsg = new StringBuilder();
-            List<FieldError> errors = bindingResult.getFieldErrors();
-            for (FieldError error : errors) {
-                errorMsg.append(error.getField())
-                        .append(" - ").append(error.getDefaultMessage())
-                        .append(";");
-            }
+    @PostMapping(value = "/add")
+    public ResponseEntity<HttpStatus> registrationOfMeasurement(@RequestBody @Valid MeasurementDTO measurementDTO, BindingResult bindingResult){
+        Measurement measurementToAdd = convertToMeasurement(measurementDTO);
 
-            throw new MeasurementNotAddException(errorMsg.toString());
-        }
-        measurementService.saveMeasurement(measurement);
+        measurementValidator.validate(measurementToAdd, bindingResult);
+        if (bindingResult.hasErrors())
+            returnErrorsToClient(bindingResult);
+
+        measurementService.saveMeasurement(measurementToAdd);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    private Measurement convertToMeasurement(MeasurementDTO measurementDTO) {
+        return modelMapper.map(measurementDTO, Measurement.class);
+    }
+
+    private MeasurementDTO convertToMeasurementDTO(Measurement measurement) {
+        return modelMapper.map(measurement, MeasurementDTO.class);
+    }
 
     @ExceptionHandler
-    private ResponseEntity<MeasurementResponse> handleException(MeasurementNotAddException e) {
-        MeasurementResponse response = new MeasurementResponse(
+    private ResponseEntity<MeasurementErrorResponse> handleException(MeasurementException e) {
+        MeasurementErrorResponse response = new MeasurementErrorResponse(
                 e.getMessage(),
                 System.currentTimeMillis()
         );
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

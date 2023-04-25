@@ -6,8 +6,8 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -18,27 +18,29 @@ public class Measurement {
     @JsonIgnore
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "temperature")
     @NotNull(message = "Value of temperature should not be empty")
     @Range(min = -100, max = 100, message = "The temperature should be between -100 and 100 degrees.")
-    double temperature;
+    private Double temperature;
 
     @Column(name = "raining")
     @NotNull(message = "This field should not be empty")
-    boolean raining;
+    private Boolean raining;
+
+    public Boolean isRaining() {
+        return raining;
+    }
+
+    @Column(name = "measurement_date_time")
+    @NotNull
+    private LocalDateTime measurementDateTime;
 
     @JsonIgnore
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "sensor_id", referencedColumnName = "id")
-    @NotEmpty(message = "This field should not be empty")
+    @JoinColumn(name = "sensor", referencedColumnName = "name")
+    @NotNull(message = "This field should not be empty")
     Sensor sensor;
 
-    public Measurement() {
-
-    }
-
-    public Measurement(double randomTemperature, boolean randomRaining) {
-    }
 }
