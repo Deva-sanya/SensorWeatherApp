@@ -5,8 +5,7 @@ import com.example.SensorWeatherApp.services.MeasurementService;
 import com.example.SensorWeatherApp.util.MeasurementNotAddException;
 import com.example.SensorWeatherApp.util.MeasurementResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +34,9 @@ public class MeasureController {
         return measurementService.findRainyDays();
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<HttpStatus> registrationOfMeasurement(@RequestBody @Valid Measurement measurement, BindingResult bindingResult) {
+    @PostMapping(value = "/add", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<HttpStatus> registrationOfMeasurement(@RequestBody @Valid Measurement measurement, BindingResult bindingResult){
+
         if (bindingResult.hasErrors()) {
             StringBuilder errorMsg = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();

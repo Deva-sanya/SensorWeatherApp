@@ -30,8 +30,9 @@ public class SensorController {
         return sensorService.findAllSensors();
     }
 
-    @PostMapping("/registration")
+    @PostMapping(value = "/registration", consumes = "application/json", produces = "application/json")
     public ResponseEntity<HttpStatus> registrationOfSensor(@RequestBody @Valid Sensor sensor, BindingResult bindingResult) {
+
         if (bindingResult.hasErrors()) {
             StringBuilder errorMsg = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();
